@@ -295,9 +295,10 @@
                                 <input type="url" id="adUrl" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500" placeholder="https://example.com/product-page">
                                 <p class="mt-1 text-xs text-gray-500">URLを入力すると、ページの内容を考慮した提案を生成します。</p>
                             </div>
-                            <div class="mt-4 flex flex-col sm:flex-row gap-4">
-                                <button id="generateCopyBtn" class="flex-1 inline-flex items-center justify-center px-4 py-2 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-teal-600 hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500">広告コピーとキーワードを生成 ✨</button>
-                                <button id="generateTargetingBtn" class="flex-1 inline-flex items-center justify-center px-4 py-2 border border-gray-300 text-base font-medium rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500">ターゲティング戦略を生成 🎯</button>
+                            <div class="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                <button id="generateTargetingBtn" class="sm:col-span-1 inline-flex items-center justify-center px-4 py-2 border border-gray-300 text-base font-medium rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500">ターゲティング案を生成 🎯</button>
+                                <button id="generateCopyBtn" class="sm:col-span-1 inline-flex items-center justify-center px-4 py-2 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-teal-600 hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500">広告コピーを生成 ✨</button>
+                                <button id="generateKeywordsBtn" class="sm:col-span-1 inline-flex items-center justify-center px-4 py-2 border border-gray-300 text-base font-medium rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500">キーワードを生成 💡</button>
                             </div>
                         </div>
                         <div id="aiResultContainer" class="mt-6 max-w-4xl mx-auto"></div>
@@ -472,6 +473,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const simulatorInputs = document.querySelectorAll('.simulator-input');
     const generateCopyBtn = document.getElementById('generateCopyBtn');
     const generateTargetingBtn = document.getElementById('generateTargetingBtn');
+    const generateKeywordsBtn = document.getElementById('generateKeywordsBtn');
     const aiResultContainer = document.getElementById('aiResultContainer');
     const productDescriptionInput = document.getElementById('productDescription');
     const adUrlInput = document.getElementById('adUrl');
@@ -1023,21 +1025,19 @@ document.addEventListener('DOMContentLoaded', () => {
             await generateAdCopy(productDescription, adUrl);
         } else if (type === 'targeting') {
             await generateTargetingIdeas(productDescription, adUrl);
+        } else if (type === 'keywords') {
+            await generateKeywords(productDescription, adUrl);
         }
     }
     
     async function generateAdCopy(productDescription, adUrl) {
-        showLoading("広告コピーとキーワードを生成中...");
+        showLoading("広告コピーを生成中...");
         
         let prompt = `あなたは優秀なデジタルマーケティング担当者です。
-以下の情報に基づき、Google検索広告で利用する「広告コピー」と「候補キーワード」を提案してください。
+以下の情報に基づき、Google検索広告用の広告コピーを厳密に6パターン提案してください。
 
 # 指示
-- 広告コピーは6パターン作成してください。各パターンには、必ず「見出し(headlines)」(30文字以内で3つ)と「説明文(descriptions)」(90文字以内で2つ)の両方を含めてください。
-- 候補キーワードは、以下の3つのカテゴリに分類し、それぞれ3つずつ、合計9個提案してください。
-  1. 広域キーワード: 検索ボリュームが大きく、広く認知を獲得するためのキーワード
-  2. 詳細キーワード: 3語以上で構成され、具体的なニーズを持つユーザーを狙うキーワード
-  3. インサイトキーワード: ユーザーの悩みや願望、利用シーンに基づいた、より深いインサイトを突くキーワード
+- 各広告パターンには、必ず「見出し(headlines)」(30文字以内で3つ)と「説明文(descriptions)」(90文字以内で2つ)の両方を含めてください。
 - 出力は指定されたJSON形式に厳密に従ってください。
 
 # 提供情報`;
@@ -1062,18 +1062,9 @@ document.addEventListener('DOMContentLoaded', () => {
                                 },
                                 required: ["headlines", "descriptions"]
                             }
-                        },
-                        keyword_strategy: {
-                            type: "OBJECT",
-                            properties: {
-                                broad_keywords: { type: "ARRAY", items: { type: "STRING" } },
-                                long_tail_keywords: { type: "ARRAY", items: { type: "STRING" } },
-                                insight_keywords: { type: "ARRAY", items: { type: "STRING" } }
-                            },
-                            required: ["broad_keywords", "long_tail_keywords", "insight_keywords"]
                         }
                     },
-                    required: ["ads", "keyword_strategy"]
+                    required: ["ads"]
                 }
             } 
         };
@@ -1083,7 +1074,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (result.candidates && result.candidates[0]?.content?.parts?.[0]) {
                 const resultText = result.candidates[0].content.parts[0].text;
                 const parsedResult = JSON.parse(resultText);
-                displayAdCopy(parsedResult);
+                displayAdCopy(parsedResult.ads);
             } else {
                 throw new Error("予期せぬAPIレスポンス形式です。");
             }
@@ -1187,42 +1178,98 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error(error);
         }
     }
+    
+    async function generateKeywords(productDescription, adUrl) {
+        showLoading("キーワードを深掘り中...");
+        
+        let prompt = `あなたは優秀な検索広告の専門家です。
+以下の情報に基づき、ユーザーの深いインサイトを突くような、質の高い検索キーワードを提案してください。
 
-    function displayAdCopy(data) {
-        if (!data || !data.ads || data.ads.length === 0) { 
+# 指示
+- 以下の3つのカテゴリに分類し、指定された数のキーワードを提案してください。
+  1. 詳細キーワード (10個): 3語以上で構成され、具体的なニーズを持つユーザーを狙うキーワード
+  2. インサイトキーワード (10個): ユーザーの悩みや願望、利用シーンに基づいた、より深いインサイトを突くキーワード
+- 出力は指定されたJSON形式に厳密に従ってください。
+
+# 提供情報`;
+        
+        if (productDescription) { prompt += `\n## 商品・サービス概要\n${productDescription}`; }
+        if (adUrl) { prompt += `\n## 参考URL\n${adUrl}`; }
+
+        const payload = { 
+            contents: [{ role: "user", parts: [{ text: prompt }] }], 
+            generationConfig: { 
+                responseMimeType: "application/json", 
+                responseSchema: {
+                    type: "OBJECT",
+                    properties: {
+                        long_tail_keywords: { 
+                            type: "ARRAY", 
+                            description: "詳細キーワード10個のリスト",
+                            items: { type: "STRING" } 
+                        },
+                        insight_keywords: { 
+                            type: "ARRAY", 
+                            description: "インサイトキーワード10個のリスト",
+                            items: { type: "STRING" } 
+                        }
+                    },
+                    required: ["long_tail_keywords", "insight_keywords"]
+                }
+            } 
+        };
+
+        try {
+            const result = await callAIApi(payload);
+            if (result.candidates && result.candidates[0]?.content?.parts?.[0]) {
+                const resultText = result.candidates[0].content.parts[0].text;
+                const parsedResult = JSON.parse(resultText);
+                displayKeywords(parsedResult);
+            } else {
+                throw new Error("予期せぬAPIレスポンス形式です。");
+            }
+        } catch (e) { 
+            showError(e.message); 
+            console.error(e);
+        }
+    }
+
+    function displayAdCopy(ads) {
+        if (!ads || ads.length === 0) { 
             showError("広告コピーを生成できませんでした。"); 
             return; 
         }
-        let html = '<div class="space-y-8">';
-        
-        // 広告コピーの表示
-        html += '<div><h3 class="text-lg font-semibold text-teal-800 mb-4 text-center">AIが生成した広告コピー案</h3><div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">';
-        data.ads.forEach((ad, index) => {
+        let html = '<div><h3 class="text-lg font-semibold text-teal-800 mb-4 text-center">AIが生成した広告コピー案</h3><div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">';
+        ads.forEach((ad, index) => {
             const headlinesHtml = (ad.headlines || []).map(h => `<li>${h}</li>`).join('');
             const descriptionsHtml = (ad.descriptions || []).map(d => `<li>${d}</li>`).join('');
 
             html += `<div class="bg-gray-50 border border-gray-200 rounded-lg p-4"><h4 class="font-bold mb-2 text-gray-700">パターン ${index + 1}</h4><div class="space-y-2"><div><p class="text-sm font-semibold text-teal-700">見出し:</p><ul class="list-disc list-inside text-gray-600 text-sm">${headlinesHtml}</ul></div><div><p class="text-sm font-semibold text-teal-700">説明文:</p><ul class="list-disc list-inside text-gray-600 text-sm">${descriptionsHtml}</ul></div></div></div>`;
         });
-        html += '</div></div>';
+        aiResultContainer.innerHTML = html + '</div></div>';
+    }
 
-        // キーワード戦略の表示
-        if (data.keyword_strategy) {
-            const renderKeywords = (title, keywords) => {
-                if (!keywords || keywords.length === 0) return '';
-                return `<div class="flex-1 min-w-[280px]">
-                            <h4 class="font-semibold text-gray-700">${title}</h4>
-                            <div class="flex flex-wrap gap-2 mt-2">${keywords.map(kw => `<span class="bg-gray-200 text-gray-800 text-sm font-medium px-3 py-1 rounded-full">${kw}</span>`).join('')}</div>
-                        </div>`;
-            };
-            html += `<div class="pt-8 border-t">
-                        <h3 class="text-lg font-semibold text-teal-800 mb-4 text-center">AIが提案するキーワード戦略</h3>
-                        <div class="flex flex-wrap justify-center gap-8">
-                            ${renderKeywords('広域キーワード', data.keyword_strategy.broad_keywords)}
-                            ${renderKeywords('詳細キーワード', data.keyword_strategy.long_tail_keywords)}
-                            ${renderKeywords('インサイトキーワード', data.keyword_strategy.insight_keywords)}
-                        </div>
-                     </div>`;
+    function displayKeywords(data) {
+        if (!data) {
+            showError("キーワードを生成できませんでした。");
+            return;
         }
+        let html = '<div class="space-y-8">';
+        
+        const renderKeywords = (title, keywords) => {
+            if (!keywords || keywords.length === 0) return '';
+            return `<div class="flex-1 min-w-[280px]">
+                        <h4 class="font-semibold text-gray-700 text-lg mb-3">${title}</h4>
+                        <div class="flex flex-wrap gap-2">${keywords.map(kw => `<span class="bg-gray-200 text-gray-800 text-sm font-medium px-3 py-1 rounded-full">${kw}</span>`).join('')}</div>
+                    </div>`;
+        };
+        html += `<div class="pt-8">
+                    <h3 class="text-xl font-bold text-teal-800 mb-6 text-center">AIによるキーワード深掘り提案</h3>
+                    <div class="flex flex-col md:flex-row justify-center gap-8">
+                        ${renderKeywords('詳細キーワード (Long-tail)', data.long_tail_keywords)}
+                        ${renderKeywords('インサイトキーワード (Insight)', data.insight_keywords)}
+                    </div>
+                 </div>`;
 
         aiResultContainer.innerHTML = html + '</div>';
     }
@@ -1311,6 +1358,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     generateCopyBtn.addEventListener('click', () => handleAIGeneration('copy'));
     generateTargetingBtn.addEventListener('click', () => handleAIGeneration('targeting'));
+    generateKeywordsBtn.addEventListener('click', () => handleAIGeneration('keywords'));
     
     document.body.addEventListener('click', (e) => {
         const icon = e.target.closest('.info-icon');
