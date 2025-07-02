@@ -48,7 +48,7 @@
 </head>
 <body class="text-gray-800">
 
-    <!-- ログイン状態の時に表示されるメインコンテンツ -->
+    <!-- ログイン状態の時に表示されるメインコンテンツ (初期状態はhidden) -->
     <div id="app-container" class="hidden">
         <div class="container mx-auto px-4 py-8">
             <header class="text-center mb-8 flex justify-between items-center">
@@ -242,8 +242,8 @@
         </div>
     </div>
 
-    <!-- ログアウト状態の時に表示されるメッセージ -->
-    <div id="login-prompt" class="hidden">
+    <!-- ログアウト状態の時に表示されるメッセージ (初期状態で表示) -->
+    <div id="login-prompt">
         <div class="min-h-screen flex items-center justify-center bg-gray-50">
             <div class="max-w-md w-full bg-white p-8 rounded-xl shadow-lg text-center">
                 <h2 class="text-2xl font-bold text-teal-700">アクセスありがとうございます</h2>
@@ -269,6 +269,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const updateUserState = (user) => {
         if (user) {
+            // ユーザーがログインしている場合
             appContainer.classList.remove('hidden');
             loginPrompt.classList.add('hidden');
             // ログイン後に初めてメインの電卓機能を初期化
@@ -277,17 +278,22 @@ document.addEventListener('DOMContentLoaded', () => {
                 plannerInitialized = true;
             }
         } else {
+            // ユーザーがログインしていない場合
             appContainer.classList.add('hidden');
             loginPrompt.classList.remove('hidden');
         }
     };
 
-    // ユーザー状態の変更を監視
+    // Netlify Identityの初期化が完了した時点でユーザー状態をチェック
     netlifyIdentity.on('init', user => updateUserState(user));
+    
+    // ログインイベントを監視
     netlifyIdentity.on('login', user => {
         updateUserState(user);
         netlifyIdentity.close(); // ログイン後にウィジェットを閉じる
     });
+    
+    // ログアウトイベントを監視
     netlifyIdentity.on('logout', () => updateUserState(null));
 });
 
