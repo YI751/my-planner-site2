@@ -296,8 +296,8 @@
                                 <p class="mt-1 text-xs text-gray-500">URLを入力すると、ページの内容を考慮した提案を生成します。</p>
                             </div>
                             <div class="mt-4 flex flex-col sm:flex-row gap-4">
-                                <button id="generateCopyBtn" class="flex-1 inline-flex items-center justify-center px-4 py-2 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-teal-600 hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500">広告コピーを生成 ✨</button>
-                                <button id="generateTargetingBtn" class="flex-1 inline-flex items-center justify-center px-4 py-2 border border-gray-300 text-base font-medium rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500">ターゲティング案を生成 🎯</button>
+                                <button id="generateCopyBtn" class="flex-1 inline-flex items-center justify-center px-4 py-2 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-teal-600 hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500">広告コピーとキーワードを生成 ✨</button>
+                                <button id="generateTargetingBtn" class="flex-1 inline-flex items-center justify-center px-4 py-2 border border-gray-300 text-base font-medium rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500">ターゲティング戦略を生成 🎯</button>
                             </div>
                         </div>
                         <div id="aiResultContainer" class="mt-6 max-w-4xl mx-auto"></div>
@@ -1027,15 +1027,14 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     async function generateAdCopy(productDescription, adUrl) {
-        showLoading("広告コピーを生成中...");
+        showLoading("広告コピーとキーワードを生成中...");
         
         let prompt = `あなたは優秀なデジタルマーケティング担当者です。
-以下の情報に基づき、Google検索広告用の広告コピーを厳密に6パターン提案してください。
+以下の情報に基づき、Google検索広告で利用する「広告コピー」と「候補キーワード」を提案してください。
 
 # 指示
-- 各広告パターンには、必ず「見出し(headlines)」と「説明文(descriptions)」の両方を含めてください。
-- 見出しは30文字以内で3つ作成してください。
-- 説明文は90文字以内で2つ作成してください。
+- 広告コピーは6パターン作成してください。各パターンには、必ず「見出し(headlines)」(30文字以内で3つ)と「説明文(descriptions)」(90文字以内で2つ)の両方を含めてください。
+- 候補キーワードは、生成した広告コピーと関連性の高いものを10個提案してください。
 - 出力は指定されたJSON形式に厳密に従ってください。
 
 # 提供情報`;
@@ -1060,9 +1059,14 @@ document.addEventListener('DOMContentLoaded', () => {
                                 },
                                 required: ["headlines", "descriptions"]
                             }
+                        },
+                        suggested_keywords: {
+                            type: "ARRAY",
+                            description: "提案する検索キーワード10個のリスト",
+                            items: { type: "STRING" }
                         }
                     },
-                    required: ["ads"]
+                    required: ["ads", "suggested_keywords"]
                 }
             } 
         };
@@ -1072,11 +1076,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (result.candidates && result.candidates[0]?.content?.parts?.[0]) {
                 const resultText = result.candidates[0].content.parts[0].text;
                 const parsedResult = JSON.parse(resultText);
-                if (parsedResult.ads && Array.isArray(parsedResult.ads)) {
-                   displayAdCopy(parsedResult.ads);
-                } else {
-                   showError("AIが期待通りの形式で応答しませんでした。");
-                }
+                displayAdCopy(parsedResult);
             } else {
                 throw new Error("予期せぬAPIレスポンス形式です。");
             }
@@ -1094,7 +1094,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 # 指示
 - あなたの任務は、最もありきたりな提案を避け、この商品/サービスに特有の機会を捉える、最も洞察に満ちたユニークなプラットフォームの組み合わせを2つ提案することです。
-- 提案は必ず、1つは「基軸プラットフォーム」(Google広告またはMeta広告)から、もう1つは「拡張プラットフォーム」(X, LINE, TikTok, Yahoo!, SmartNews, DV360など)から選んでください。
+- 提案は必ず、1つは「基軸プラットフォーム」(Google広告またはMeta広告)から、もう1つは「拡張プラットフォーム」(X, LINE, TikTok, Yahoo!広告, SmartNews広告, Google Display & Video 360など)から選んでください。
 - 必ず指定されたJSON形式で出力してください。
 - 各項目は、簡潔かつ戦略的な要点に絞って記述してください。
 - ペルソナは2つ作成してください。
@@ -1118,7 +1118,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             properties: {
                                 profile: { type: "STRING", description: "ターゲット像を一言で表現" },
                                 lifestyle_context: { type: "STRING", description: "ペルソナの年齢や性別にも触れつつ、ライフスタイルや価値観を1文で表現" },
-                                interests_and_needs: { type: "ARRAY", description: "具体的な興味・関心・ニーズを文章で2〜3点記述", items: { type: "STRING" } },
+                                interests_and_needs: { type: "ARRAY", description: "具体的な興味・関心・ニーズを文章で厳密に2点記述", items: { type: "STRING" } },
                                 info_sources: { type: "ARRAY", description: "主な情報源の具体例(2つ)", items: { type: "STRING" } }
                             },
                              required: ["profile", "lifestyle_context", "interests_and_needs", "info_sources"]
@@ -1129,7 +1129,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             properties: {
                                 profile: { type: "STRING", description: "ターゲット像を一言で表現" },
                                 lifestyle_context: { type: "STRING", description: "ペルソナの年齢や性別にも触れつつ、ライフスタイルや価値観を1文で表現" },
-                                interests_and_needs: { type: "ARRAY", description: "具体的な興味・関心・ニーズを文章で2〜3点記述", items: { type: "STRING" } },
+                                interests_and_needs: { type: "ARRAY", description: "具体的な興味・関心・ニーズを文章で厳密に2点記述", items: { type: "STRING" } },
                                 info_sources: { type: "ARRAY", description: "主な情報源の具体例(2つ)", items: { type: "STRING" } }
                             },
                              required: ["profile", "lifestyle_context", "interests_and_needs", "info_sources"]
@@ -1181,18 +1181,31 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function displayAdCopy(ads) {
-        if (!ads || ads.length === 0) { 
+    function displayAdCopy(data) {
+        if (!data || !data.ads || data.ads.length === 0) { 
             showError("広告コピーを生成できませんでした。"); 
             return; 
         }
-        let html = '<h3 class="text-lg font-semibold text-teal-800 mb-4 text-center">AIが生成した広告コピー案</h3><div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">';
-        ads.forEach((ad, index) => {
+        let html = '<div class="space-y-8">';
+        
+        // 広告コピーの表示
+        html += '<div><h3 class="text-lg font-semibold text-teal-800 mb-4 text-center">AIが生成した広告コピー案</h3><div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">';
+        data.ads.forEach((ad, index) => {
             const headlinesHtml = (ad.headlines || []).map(h => `<li>${h}</li>`).join('');
             const descriptionsHtml = (ad.descriptions || []).map(d => `<li>${d}</li>`).join('');
 
             html += `<div class="bg-gray-50 border border-gray-200 rounded-lg p-4"><h4 class="font-bold mb-2 text-gray-700">パターン ${index + 1}</h4><div class="space-y-2"><div><p class="text-sm font-semibold text-teal-700">見出し:</p><ul class="list-disc list-inside text-gray-600 text-sm">${headlinesHtml}</ul></div><div><p class="text-sm font-semibold text-teal-700">説明文:</p><ul class="list-disc list-inside text-gray-600 text-sm">${descriptionsHtml}</ul></div></div></div>`;
         });
+        html += '</div></div>';
+
+        // キーワードの表示
+        if (data.suggested_keywords && data.suggested_keywords.length > 0) {
+            html += `<div class="pt-8 border-t">
+                        <h3 class="text-lg font-semibold text-teal-800 mb-4 text-center">AIが提案する候補キーワード</h3>
+                        <div class="flex flex-wrap justify-center gap-2">${data.suggested_keywords.map(kw => `<span class="bg-gray-200 text-gray-800 text-sm font-medium px-3 py-1 rounded-full">${kw}</span>`).join('')}</div>
+                     </div>`;
+        }
+
         aiResultContainer.innerHTML = html + '</div>';
     }
 
