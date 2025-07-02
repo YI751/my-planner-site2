@@ -1034,7 +1034,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
 # 指示
 - 広告コピーは6パターン作成してください。各パターンには、必ず「見出し(headlines)」(30文字以内で3つ)と「説明文(descriptions)」(90文字以内で2つ)の両方を含めてください。
-- 候補キーワードは、生成した広告コピーと関連性の高いものを10個提案してください。
+- 候補キーワードは、以下の3つのカテゴリに分類し、それぞれ3つずつ、合計9個提案してください。
+  1. 広域キーワード: 検索ボリュームが大きく、広く認知を獲得するためのキーワード
+  2. 詳細キーワード: 3語以上で構成され、具体的なニーズを持つユーザーを狙うキーワード
+  3. インサイトキーワード: ユーザーの悩みや願望、利用シーンに基づいた、より深いインサイトを突くキーワード
 - 出力は指定されたJSON形式に厳密に従ってください。
 
 # 提供情報`;
@@ -1060,13 +1063,17 @@ document.addEventListener('DOMContentLoaded', () => {
                                 required: ["headlines", "descriptions"]
                             }
                         },
-                        suggested_keywords: {
-                            type: "ARRAY",
-                            description: "提案する検索キーワード10個のリスト",
-                            items: { type: "STRING" }
+                        keyword_strategy: {
+                            type: "OBJECT",
+                            properties: {
+                                broad_keywords: { type: "ARRAY", items: { type: "STRING" } },
+                                long_tail_keywords: { type: "ARRAY", items: { type: "STRING" } },
+                                insight_keywords: { type: "ARRAY", items: { type: "STRING" } }
+                            },
+                            required: ["broad_keywords", "long_tail_keywords", "insight_keywords"]
                         }
                     },
-                    required: ["ads", "suggested_keywords"]
+                    required: ["ads", "keyword_strategy"]
                 }
             } 
         };
@@ -1198,11 +1205,22 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         html += '</div></div>';
 
-        // キーワードの表示
-        if (data.suggested_keywords && data.suggested_keywords.length > 0) {
+        // キーワード戦略の表示
+        if (data.keyword_strategy) {
+            const renderKeywords = (title, keywords) => {
+                if (!keywords || keywords.length === 0) return '';
+                return `<div class="flex-1 min-w-[280px]">
+                            <h4 class="font-semibold text-gray-700">${title}</h4>
+                            <div class="flex flex-wrap gap-2 mt-2">${keywords.map(kw => `<span class="bg-gray-200 text-gray-800 text-sm font-medium px-3 py-1 rounded-full">${kw}</span>`).join('')}</div>
+                        </div>`;
+            };
             html += `<div class="pt-8 border-t">
-                        <h3 class="text-lg font-semibold text-teal-800 mb-4 text-center">AIが提案する候補キーワード</h3>
-                        <div class="flex flex-wrap justify-center gap-2">${data.suggested_keywords.map(kw => `<span class="bg-gray-200 text-gray-800 text-sm font-medium px-3 py-1 rounded-full">${kw}</span>`).join('')}</div>
+                        <h3 class="text-lg font-semibold text-teal-800 mb-4 text-center">AIが提案するキーワード戦略</h3>
+                        <div class="flex flex-wrap justify-center gap-8">
+                            ${renderKeywords('広域キーワード', data.keyword_strategy.broad_keywords)}
+                            ${renderKeywords('詳細キーワード', data.keyword_strategy.long_tail_keywords)}
+                            ${renderKeywords('インサイトキーワード', data.keyword_strategy.insight_keywords)}
+                        </div>
                      </div>`;
         }
 
