@@ -1093,7 +1093,8 @@ document.addEventListener('DOMContentLoaded', () => {
 以下の情報に基づき、デジタル広告キャンペーンのターゲティング戦略を提案してください。
 
 # 指示
-- あなたの任務は、最もありきたりな提案を避け、この商品/サービスに特有の機会を捉える、最も洞察に満ちたユニークなプラットフォームの組み合わせを2つ提案することです。以下のリスト全体を評価し、意外性がありながらも論理的な選択をしてください: Google広告, Meta広告(IG/FB), X(旧Twitter)広告, LINE広告, TikTok広告, Yahoo!広告, SmartNews広告, Google Display & Video 360など。
+- あなたの任務は、最もありきたりな提案を避け、この商品/サービスに特有の機会を捉える、最も洞察に満ちたユニークなプラットフォームの組み合わせを2つ提案することです。
+- 提案は必ず、1つは「基軸プラットフォーム」(Google広告またはMeta広告)から、もう1つは「拡張プラットフォーム」(X, LINE, TikTok, Yahoo!, SmartNews, DV360など)から選んでください。
 - 必ず指定されたJSON形式で出力してください。
 - 各項目は、簡潔かつ戦略的な要点に絞って記述してください。
 - ペルソナは2つ作成してください。
@@ -1116,7 +1117,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             description: "最も優先すべきメインターゲット",
                             properties: {
                                 profile: { type: "STRING", description: "ターゲット像を一言で表現" },
-                                lifestyle_context: { type: "STRING", description: "ライフスタイルや価値観を1文で表現" },
+                                lifestyle_context: { type: "STRING", description: "ペルソナの年齢や性別にも触れつつ、ライフスタイルや価値観を1文で表現" },
                                 interests_and_needs: { type: "ARRAY", description: "具体的な興味・関心・ニーズを文章で2〜3点記述", items: { type: "STRING" } },
                                 info_sources: { type: "ARRAY", description: "主な情報源の具体例(2つ)", items: { type: "STRING" } }
                             },
@@ -1127,24 +1128,38 @@ document.addEventListener('DOMContentLoaded', () => {
                             description: "次に狙うべきサブターゲット",
                             properties: {
                                 profile: { type: "STRING", description: "ターゲット像を一言で表現" },
-                                lifestyle_context: { type: "STRING", description: "ライフスタイルや価値観を1文で表現" },
+                                lifestyle_context: { type: "STRING", description: "ペルソナの年齢や性別にも触れつつ、ライフスタイルや価値観を1文で表現" },
                                 interests_and_needs: { type: "ARRAY", description: "具体的な興味・関心・ニーズを文章で2〜3点記述", items: { type: "STRING" } },
                                 info_sources: { type: "ARRAY", description: "主な情報源の具体例(2つ)", items: { type: "STRING" } }
                             },
                              required: ["profile", "lifestyle_context", "interests_and_needs", "info_sources"]
                         },
                         platform_strategy: {
-                            type: "ARRAY",
-                            description: "推奨プラットフォームとその戦略的理由(2つまで)",
-                            items: {
-                                type: "OBJECT",
-                                properties: {
-                                    platform_name: { type: "STRING" },
-                                    strategic_reason: { type: "STRING", description: "なぜそのプラットフォームを選ぶべきかの簡潔な理由" },
-                                    approach_example: { type: "STRING", description: "具体的なアプローチ手法の例" }
+                            type: "OBJECT",
+                            description: "基軸プラットフォームと拡張プラットフォームの組み合わせ",
+                            properties: {
+                                mainstay_platform: {
+                                    type: "OBJECT",
+                                    description: "Google広告またはMeta広告から選択",
+                                     properties: {
+                                        platform_name: { type: "STRING" },
+                                        strategic_reason: { type: "STRING" },
+                                        approach_example: { type: "STRING" }
+                                    },
+                                    required: ["platform_name", "strategic_reason", "approach_example"]
                                 },
-                                required: ["platform_name", "strategic_reason", "approach_example"]
-                            }
+                                alternative_platform: {
+                                    type: "OBJECT",
+                                    description: "Google/Meta以外の多様な広告媒体から選択",
+                                     properties: {
+                                        platform_name: { type: "STRING" },
+                                        strategic_reason: { type: "STRING" },
+                                        approach_example: { type: "STRING" }
+                                    },
+                                    required: ["platform_name", "strategic_reason", "approach_example"]
+                                }
+                            },
+                            required: ["mainstay_platform", "alternative_platform"]
                         }
                     },
                     required: ["overall_strategy", "primary_persona", "secondary_persona", "platform_strategy"]
@@ -1236,21 +1251,26 @@ document.addEventListener('DOMContentLoaded', () => {
                  </div>`;
 
         // 3. プラットフォーム戦略
-        if (data.platform_strategy && data.platform_strategy.length > 0) {
+        const renderPlatform = (platform) => {
+            if (!platform) return '';
+            return `<div class="bg-gray-50 p-4 rounded-lg border">
+                        <h5 class="font-bold text-md text-teal-700">${platform.platform_name || ''}</h5>
+                        <p class="text-sm text-gray-700 mt-2"><strong class="font-semibold">理由:</strong> ${platform.strategic_reason || ''}</p>
+                        <p class="text-sm text-gray-700 mt-1"><strong class="font-semibold">アプローチ例:</strong> ${platform.approach_example || ''}</p>
+                     </div>`;
+        }
+
+        if (data.platform_strategy) {
             html += `<div>
                         <h4 class="text-lg font-semibold text-gray-800 mb-3 flex items-center gap-2">
                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-teal-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
                            推奨プラットフォームと戦略
                         </h4>
-                        <div class="space-y-4">`;
-            data.platform_strategy.forEach(platform => {
-                html += `<div class="bg-gray-50 p-4 rounded-lg border">
-                            <h5 class="font-bold text-md text-teal-700">${platform.platform_name || ''}</h5>
-                            <p class="text-sm text-gray-700 mt-2"><strong class="font-semibold">理由:</strong> ${platform.strategic_reason || ''}</p>
-                            <p class="text-sm text-gray-700 mt-1"><strong class="font-semibold">アプローチ例:</strong> ${platform.approach_example || ''}</p>
-                         </div>`;
-            });
-            html += '</div></div>';
+                        <div class="space-y-4">
+                            ${renderPlatform(data.platform_strategy.mainstay_platform)}
+                            ${renderPlatform(data.platform_strategy.alternative_platform)}
+                        </div>
+                    </div>`;
         }
 
         html += '</div>';
