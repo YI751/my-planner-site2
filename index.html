@@ -1093,7 +1093,7 @@ document.addEventListener('DOMContentLoaded', () => {
 以下の情報に基づき、デジタル広告キャンペーンのターゲティング戦略を提案してください。
 
 # 指示
-- あなたの提案はGoogleとInstagramに偏る傾向があります。今回は、以下の多様なプラットフォームリストの中から、提供された情報に最も最適なものを2つだけ選び、その戦略的理由を述べてください: Google広告, Meta広告(IG/FB), X(旧Twitter)広告, LINE広告, TikTok広告, Yahoo!広告, SmartNews広告, Google Display & Video 360など。
+- あなたの任務は、最もありきたりな提案を避け、この商品/サービスに特有の機会を捉える、最も洞察に満ちたユニークなプラットフォームの組み合わせを2つ提案することです。以下のリスト全体を評価し、意外性がありながらも論理的な選択をしてください: Google広告, Meta広告(IG/FB), X(旧Twitter)広告, LINE広告, TikTok広告, Yahoo!広告, SmartNews広告, Google Display & Video 360など。
 - 必ず指定されたJSON形式で出力してください。
 - 各項目は、簡潔かつ戦略的な要点に絞って記述してください。
 - ペルソナは2つ作成してください。
@@ -1117,10 +1117,10 @@ document.addEventListener('DOMContentLoaded', () => {
                             properties: {
                                 profile: { type: "STRING", description: "ターゲット像を一言で表現" },
                                 lifestyle_context: { type: "STRING", description: "ライフスタイルや価値観を1文で表現" },
-                                pains_and_needs: { type: "ARRAY", description: "抱える悩みやニーズの箇条書き(2-3点)", items: { type: "STRING" } },
+                                interests_and_needs: { type: "ARRAY", description: "具体的な興味・関心・ニーズを文章で2〜3点記述", items: { type: "STRING" } },
                                 info_sources: { type: "ARRAY", description: "主な情報源の具体例(2つ)", items: { type: "STRING" } }
                             },
-                             required: ["profile", "lifestyle_context", "pains_and_needs", "info_sources"]
+                             required: ["profile", "lifestyle_context", "interests_and_needs", "info_sources"]
                         },
                         secondary_persona: {
                             type: "OBJECT",
@@ -1128,10 +1128,10 @@ document.addEventListener('DOMContentLoaded', () => {
                             properties: {
                                 profile: { type: "STRING", description: "ターゲット像を一言で表現" },
                                 lifestyle_context: { type: "STRING", description: "ライフスタイルや価値観を1文で表現" },
-                                pains_and_needs: { type: "ARRAY", description: "抱える悩みやニーズの箇条書き(2-3点)", items: { type: "STRING" } },
+                                interests_and_needs: { type: "ARRAY", description: "具体的な興味・関心・ニーズを文章で2〜3点記述", items: { type: "STRING" } },
                                 info_sources: { type: "ARRAY", description: "主な情報源の具体例(2つ)", items: { type: "STRING" } }
                             },
-                             required: ["profile", "lifestyle_context", "pains_and_needs", "info_sources"]
+                             required: ["profile", "lifestyle_context", "interests_and_needs", "info_sources"]
                         },
                         platform_strategy: {
                             type: "ARRAY",
@@ -1213,8 +1213,8 @@ document.addEventListener('DOMContentLoaded', () => {
                                     <p class="text-sm text-gray-700 mt-1">${persona.lifestyle_context || 'N/A'}</p>
                                 </div>
                                 <div>
-                                    <h6 class="font-semibold text-sm text-gray-600">悩み・ニーズ</h6>
-                                    <ul class="list-disc list-inside text-sm text-gray-700 mt-1 pl-2 space-y-1">${(persona.pains_and_needs || []).map(item => `<li>${item}</li>`).join('')}</ul>
+                                    <h6 class="font-semibold text-sm text-gray-600">具体的な興味・関心・ニーズ</h6>
+                                    <ul class="list-disc list-inside text-sm text-gray-700 mt-1 pl-2 space-y-1">${(persona.interests_and_needs || []).map(item => `<li>${item}</li>`).join('')}</ul>
                                 </div>
                                 <div>
                                     <h6 class="font-semibold text-sm text-gray-600">主な情報源</h6>
