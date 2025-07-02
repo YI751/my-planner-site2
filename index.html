@@ -10,7 +10,6 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
     
-    <!-- Netlify Identity Widgetのスクリプトを追加 -->
     <script type="text/javascript" src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
 
     <style>
@@ -48,16 +47,13 @@
 </head>
 <body class="text-gray-800">
 
-    <!-- ログイン状態の時に表示されるメインコンテンツ (初期状態はhidden) -->
     <div id="app-container" class="hidden">
         <div class="container mx-auto px-4 py-8">
             <header class="text-center mb-8 flex justify-between items-center">
-                <div></div> <!-- 左側のスペース確保用 -->
-                <div>
+                <div></div> <div>
                     <h1 class="text-4xl font-bold text-teal-700">インタラクティブWeb広告予算プランナー</h1>
                     <p class="mt-2 text-lg text-gray-600">過去データがない状態から、論理的な広告予算と戦略を策定する</p>
                 </div>
-                <!-- ログイン/ログアウトボタン用のコンテナ -->
                 <div data-netlify-identity-button></div>
             </header>
             
@@ -70,7 +66,6 @@
             </nav>
 
             <main>
-                <!-- 以下、既存のツールコンテンツは変更なし -->
                 <section id="simulator" class="content-section">
                     <div class="bg-white p-6 md:p-8 rounded-xl shadow-lg">
                         <div class="text-center mb-6">
@@ -231,8 +226,7 @@
                             <p class="text-gray-500 mt-2">広告予算の策定に必要な主要な指標と計算式の一覧です。</p>
                         </div>
                         <div class="space-y-8 max-w-6xl mx-auto">
-                            <!-- 用語解説コンテンツはここに挿入されます -->
-                        </div>
+                            </div>
                     </div>
                 </section>
 
@@ -242,13 +236,11 @@
         </div>
     </div>
 
-    <!-- ログアウト状態の時に表示されるメッセージ (初期状態で表示) -->
     <div id="login-prompt">
         <div class="min-h-screen flex items-center justify-center bg-gray-50">
             <div class="max-w-md w-full bg-white p-8 rounded-xl shadow-lg text-center">
                 <h2 class="text-2xl font-bold text-teal-700">アクセスありがとうございます</h2>
                 <p class="text-gray-600 mt-2 mb-6">このツールを利用するにはログインが必要です。</p>
-                <!-- ログインボタン用のコンテナ -->
                 <div data-netlify-identity-button></div>
             </div>
         </div>
@@ -284,8 +276,14 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // Netlify Identityの初期化が完了した時点でユーザー状態をチェック
-    netlifyIdentity.on('init', user => updateUserState(user));
+    // ===== ★ここからが修正箇所です★ =====
+    // Netlify Identityの初期化完了を待ってから、現在のユーザー情報を取得して表示を切り替えます。
+    // これにより、表示とボタンの状態が確実に同期されます。
+    netlifyIdentity.on('init', () => {
+        const user = netlifyIdentity.currentUser();
+        updateUserState(user);
+    });
+    // ===== ★ここまでが修正箇所です★ =====
     
     // ログインイベントを監視
     netlifyIdentity.on('login', user => {
@@ -294,7 +292,9 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     
     // ログアウトイベントを監視
-    netlifyIdentity.on('logout', () => updateUserState(null));
+    netlifyIdentity.on('logout', () => {
+        updateUserState(null);
+    });
 });
 
 
