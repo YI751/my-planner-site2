@@ -310,32 +310,22 @@ function initializePlanner() {
     // ケーススタディのデータを、すべて健全な利益が出るように調整しました。
     const data = {
         caseStudies: [
-            // 変更なし
             { id: 'fitness-24h', title: 'フィットネス', subtitle: '24時間営業ジム', targetProfit: 600000, avgCustomerValue: 38400, cogs: 10000, profitPerCv: 8000, cvr: 3.5, cpc: 250, description: '駅近で便利な24時間営業フィットネスジム。最新マシン完備で、月額8,000円から利用可能。見学予約受付中。' },
             { id: 'fitness-yoga', title: 'フィットネス', subtitle: '女性専用ホットヨガ', targetProfit: 450000, avgCustomerValue: 60000, cogs: 20000, profitPerCv: 15000, cvr: 2.5, cpc: 180, description: '初心者歓迎の女性専用ホットヨガスタジオ。デトックスとリラックス効果で心も体も美しく。体験レッスン受付中。' },
-            // 修正: cpcを400→300に調整し、利益が出るように変更
             { id: 'fitness-online', title: 'フィットネス', subtitle: 'オンラインパーソナル', targetProfit: 400000, avgCustomerValue: 25000, cogs: 5000, profitPerCv: 10000, cvr: 2.0, cpc: 300, description: '自宅で受けられる本格的なオンラインパーソナルトレーニング。あなた専用のプログラムで理想の身体へ。無料カウンセリング実施中。' },
-            // 変更なし
             { id: 'tutor-elem', title: '学習塾', subtitle: '小学生向け集団指導', targetProfit: 500000, avgCustomerValue: 48000, cogs: 20000, profitPerCv: 10000, cvr: 1.5, cpc: 300, description: '地域密着型の小学生向け学習塾。わかるまで徹底指導で、勉強が楽しくなる。まずは資料請求から。' },
             { id: 'tutor-univ', title: '学習塾', subtitle: '大学受験予備校', targetProfit: 1350000, avgCustomerValue: 150000, cogs: 60000, profitPerCv: 45000, cvr: 2.5, cpc: 550, description: '難関大学を目指す高校生のための大学受験予備校。プロ講師陣による質の高い授業と手厚いサポート。個別相談会を予約。' },
             { id: 'tutor-prog', title: '学習塾', subtitle: 'プログラミングスクール', targetProfit: 1000000, avgCustomerValue: 60000, cogs: 10000, profitPerCv: 20000, cvr: 3.0, cpc: 700, description: '未経験からITエンジニアへ。転職保証付きの社会人向けプログラミングスクール。まずは無料カウンセリングへ。' },
-            // 変更なし (cogs:0 はサービス業として妥当)
             { id: 'buyback-brand', title: '買取サービス', subtitle: 'ブランド品宅配買取', targetProfit: 400000, avgCustomerValue: 9000, cogs: 0, profitPerCv: 4000, cvr: 5.0, cpc: 400, description: '送料無料、手数料無料のブランド品宅配買取サービス。箱に詰めて送るだけで簡単査定。宅配キットを申し込む。' },
-            // 修正: cpcを600→200に調整し、利益が出るように変更
             { id: 'buyback-car', title: '買取サービス', subtitle: '中古車一括査定', targetProfit: 1000000, avgCustomerValue: 5000, cogs: 0, profitPerCv: 2000, cvr: 8.0, cpc: 200, description: '愛車の最高額がわかる！複数の買取業者に一括で査定を依頼できる無料サービス。' },
-            // 修正: cpcを150→80に調整し、利益が出るように変更
             { id: 'buyback-book', title: '買取サービス', subtitle: '古本・ゲーム出張買取', targetProfit: 160000, avgCustomerValue: 3600, cogs: 0, profitPerCv: 1600, cvr: 4.0, cpc: 80, description: '本・漫画・ゲーム、30点から無料で出張買取。玄関先で査定、その場で現金払い。' },
-            // 変更なし (cogs:0 は仲介業として妥当)
             { id: 'real-estate', title: '不動産', subtitle: '賃貸仲介（問い合わせ）', targetProfit: 600000, avgCustomerValue: 30000, cogs: 0, profitPerCv: 15000, cvr: 2.5, cpc: 300, description: '都心エリアの単身者向け賃貸物件を専門に扱う不動産仲介サービス。オンライン内見にも対応。' },
-            // 修正: cvrを1.0→2.5に、cpcを800→300に調整し、利益が出るように変更
-            { id: 'real-estate-invest', title: '不動産', subtitle: '投資用物件（資料請求）', targetProfit: 2000000, avgCustomerValue: 10000, cogs: 0, profitPerCv: 5000, cvr: 2.5, cpc: 300, description: '将来のための資産形成。都心の中古マンションを中心とした投資用不動産のご提案。まずは無料の資料請求から。' },
-            // 変更なし (cogs:0 は仲介業として妥当)
+            // 修正: cvrを4.0%に、cpcを300円に調整
+            { id: 'real-estate-invest', title: '不動産', subtitle: '投資用物件（資料請求）', targetProfit: 2000000, avgCustomerValue: 10000, cogs: 0, profitPerCv: 5000, cvr: 4.0, cpc: 300, description: '将来のための資産形成。都心の中古マンションを中心とした投資用不動産のご提案。まずは無料の資料請求から。' },
             { id: 'real-estate-new', title: '不動産', subtitle: '新築戸建て（見学予約）', targetProfit: 1500000, avgCustomerValue: 50000, cogs: 0, profitPerCv: 25000, cvr: 1.5, cpc: 650, description: '家族の夢を叶える、デザイン性の高い新築戸建て。週末の見学会を予約して、理想の住まいを体感してください。' },
-            // 修正: cpcを120→100に調整し、利益が出るように変更
-            { id: 'b2c-ec', title: 'B2C Eコマース', subtitle: 'ハンドメイドアクセサリー', targetProfit: 150000, avgCustomerValue: 5000, cogs: 1000, profitPerCv: 2000, cvr: 1.0, cpc: 100, description: '20代女性向けの、高品質な天然石を使ったハンドメイドアクセサリーのオンラインストア。' },
-            // 変更なし (cogs:0 はSaaSとして妥当)
+            // 修正: avgCustomerValueを6000円に、cvrを2.0%に、cpcを80円に調整
+            { id: 'b2c-ec', title: 'B2C Eコマース', subtitle: 'ハンドメイドアクセサリー', targetProfit: 150000, avgCustomerValue: 6000, cogs: 1000, profitPerCv: 2000, cvr: 2.0, cpc: 80, description: '20代女性向けの、高品質な天然石を使ったハンドメイドアクセサリーのオンラインストア。' },
             { id: 'b2b-saas', title: 'B2B SaaS', subtitle: 'プロジェクト管理ソフト', targetProfit: 1080000, avgCustomerValue: 60000, cogs: 0, profitPerCv: 36000, cvr: 2.0, cpc: 600, description: '中小企業・スタートアップ向けの直感的なプロジェクト管理SaaSツール。タスク管理、ガントチャート、チームコラボレーション機能を提供。' },
-            // 変更なし (cogs:0 はサービス業として妥当)
             { id: 'high-ticket', title: '高価格帯B2C', subtitle: 'オンライン英会話', targetProfit: 1800000, avgCustomerValue: 24000, cogs: 0, profitPerCv: 12000, cvr: 3.0, cpc: 350, description: 'ビジネスパーソン向けのマンツーマンオンライン英会話スクール。ネイティブ講師による高品質なレッスンが特徴。' }
         ],
         // ===== ★ここまでが修正箇所です★ =====
